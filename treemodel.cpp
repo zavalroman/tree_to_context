@@ -1,6 +1,8 @@
 #include "treemodel.h"
 #include <QApplication>
 
+#include <QTimer>
+
 TreeModel::TreeModel(QObject *parent) : QFileSystemModel(parent)
 {
 
@@ -30,6 +32,7 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int rol
     }
     this->setReadOnly(false);
     QApplication::restoreOverrideCursor();
+    emit setProgressBarValue(0);
     return QFileSystemModel::setData(index, value, role);
 }
 
@@ -47,24 +50,36 @@ bool TreeModel::setNodeCheckState(const QModelIndex& index, const QVariant& valu
         emit dataChanged(index, index);
         return true;
     }
-    return QFileSystemModel::setData(index, value, role);
+    return true;//QFileSystemModel::setData(index, value, role);
 }
 
 bool TreeModel::setChildNodesCheck(const QModelIndex& index, const QVariant& value)
 {
-    int i = 0;
-    if(canFetchMore(index)) {
-        fetchMore(index);
-        QEventLoop eventLoop;
+    QTimer timer;
+    QEventLoop eventLoop;
+
+    while (canFetchMore(index)) {
         QObject::connect(this, SIGNAL(directoryLoaded(QString)), &eventLoop, SLOT(quit()));
 
-        eventLoop.exec(); //blocks untill directoryLoaded signal is fired
+        fetchMore(index);
+        eventLoop.exec();
     }
     int childrenCount = rowCount(index);
-    QModelIndex child;
-    for(i = 0; i < childrenCount; i++) {
-        child = QFileSystemModel::index(i, 0, index);
-        setNodeCheckState(child, value, Qt::CheckStateRole);
+    qDebug() << "Children count:" << childrenCount;
+
+    // emit setProgressBarValue(0);
+    // emit setProgressBarRange(0, childrenCount);
+
+    if (childrenCount > 0) {
+        // Need to wait because signal directoryLoaded does not guarantee
+        // that all childs have already been loaded
+        timer.singleShot(10, &eventLoop, &QEventLoop::quit);
+        eventLoop.exec();
+    }
+
+    for(int i = 0; i < childrenCount; i++) {
+        setNodeCheckState(QFileSystemModel::index(i, 0, index), value, Qt::CheckStateRole);
+        // emit setProgressBarValue(i + 1);
     }
     return true;
 }
@@ -91,13 +106,10 @@ Qt::CheckState TreeModel::getCheckStateAccordingToChildren(const QModelIndex & c
     int childrenCheckCount = 0;
     bool isAnyChildChecked = false;
     bool isAnyChildPartiallyChecked = false;
-    if(hasChildren(currentNodeIndex))
-    {
-        int i;
+    if(hasChildren(currentNodeIndex)) {
         int childrenCount = rowCount(currentNodeIndex);
-        QModelIndex childIndex;
-        for(i = 0; i < childrenCount; i++) {
-            childIndex = QFileSystemModel::index(i, 0, currentNodeIndex);
+        for(int i = 0; i < childrenCount; i++) {
+            QModelIndex childIndex = QFileSystemModel::index(i, 0, currentNodeIndex);
             if(checklist.contains(childIndex)) {
                 Qt::CheckState currentCheckState = checklist[childIndex];
                 if(currentCheckState == Qt::Checked) {

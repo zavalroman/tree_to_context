@@ -23,6 +23,10 @@ public:
 
     QMap<QPersistentModelIndex, Qt::CheckState> checklist;
 
+signals:
+    void setProgressBarRange(int, int);
+    void setProgressBarValue(int);
+
 private:
     bool setNodeCheckState(const QModelIndex & index, const QVariant & value, int role);
     bool setChildNodesCheck (const QModelIndex & index, const QVariant & value);

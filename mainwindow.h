@@ -21,11 +21,17 @@ public:
     ~MainWindow();
 
 private slots:
+    void setProgressBarRange(int min, int max);
+    void setProgressBarValue(int value);
     void on_actionQuit_triggered();
 
     void on_actionOpen_folder_triggered();
 
     void on_convertButton_clicked();
+
+    void on_selectAllButton_clicked();
+
+    void on_deselectAllButton_clicked();
 
 private:
     Ui::MainWindow *ui;
