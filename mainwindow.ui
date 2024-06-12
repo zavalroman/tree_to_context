@@ -17,6 +17,9 @@
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QGroupBox" name="groupBox_2">
         <property name="title">
@@ -24,7 +27,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="removeSpacesCheck">
            <property name="text">
             <string>Remove spaces at beginning</string>
            </property>
@@ -38,38 +41,38 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QCheckBox" name="checkBox_3">
+          <widget class="QCheckBox" name="useThreeBackticksCheck">
            <property name="text">
             <string>Use three backticks</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QCheckBox" name="checkBox_5">
+          <widget class="QCheckBox" name="removeEmptyLinesCheck">
            <property name="text">
             <string>Remove empty lines</string>
            </property>
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QCheckBox" name="checkBox_2">
+          <widget class="QCheckBox" name="excludeLinesWithCheck">
            <property name="text">
             <string>Exclude lines starting with</string>
            </property>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QCheckBox" name="checkBox_4">
+          <widget class="QCheckBox" name="fileAnnotationCheck">
            <property name="text">
             <string>File annotation</string>
            </property>
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QLineEdit" name="lineEdit"/>
+          <widget class="QLineEdit" name="excludeText"/>
          </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="lineEdit_2">
+          <widget class="QLineEdit" name="fileAnnotationText">
            <property name="text">
             <string>File &lt;filepath&gt;:</string>
            </property>
@@ -132,8 +135,17 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QTreeView" name="treeView"/>
@@ -170,14 +182,19 @@
          </layout>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QPlainTextEdit" name="plainTextEdit"/>
-      </item>
-     </layout>
+      </widget>
+      <widget class="QPlainTextEdit" name="fileContentViewer">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+      </property>
       <item>
        <widget class="QProgressBar" name="progressBar"/>
       </item>

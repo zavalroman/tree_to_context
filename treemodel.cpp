@@ -8,6 +8,29 @@ TreeModel::TreeModel(QObject *parent) : QFileSystemModel(parent)
 
 }
 
+void TreeModel::selectAll(const QModelIndex& rootIndex)
+{
+    int rootItemsCount = rowCount(rootIndex);
+    //emit setProgressBarRange(0, rootItemsCount);
+
+    totalCount = 0;
+    currentStep = 0;
+    emit setProgressBarValue(0);
+
+    for(int i = 0; i < rootItemsCount; i++) {
+        //emit setProgressBarValue(i + 1);
+        setNodeCheckState(QFileSystemModel::index(i, 0, rootIndex), Qt::Checked, Qt::CheckStateRole);
+    }
+}
+
+void TreeModel::deselectAll(const QModelIndex &rootIndex)
+{
+    int rootItemsCount = rowCount(rootIndex);
+    for(int i = 0; i < rootItemsCount; i++) {
+        setNodeCheckState(QFileSystemModel::index(i, 0, rootIndex), Qt::Unchecked, Qt::CheckStateRole);
+    }
+}
+
 QVariant TreeModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::CheckStateRole) {
         if(checklist.contains(index)) {
@@ -20,19 +43,29 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const {
 }
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const {
-    return QFileSystemModel::flags(index) | Qt::ItemIsUserCheckable;
+    if (index.column() > 0) {
+        return QFileSystemModel::flags(index);
+    } else {
+        return QFileSystemModel::flags(index) | Qt::ItemIsUserCheckable;
+    }
 }
 
 bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     if (role == Qt::CheckStateRole) {
+        totalCount = 0;
+        currentStep = 0;
+        emit setProgressBarValue(0);
+
         setNodeCheckState(index, value, role);
         setParentNodeCheckState(index);
     }
     this->setReadOnly(false);
     QApplication::restoreOverrideCursor();
-    emit setProgressBarValue(0);
+
+    emit setProgressBarRange(0, 1);
+    emit setProgressBarValue(1);
     return QFileSystemModel::setData(index, value, role);
 }
 
@@ -45,6 +78,7 @@ bool TreeModel::setNodeCheckState(const QModelIndex& index, const QVariant& valu
         } else {
             checklist.insert(index, currentNodeCheckState);
         }
+
         setChildNodesCheck(index, value);
 
         emit dataChanged(index, index);
@@ -65,10 +99,11 @@ bool TreeModel::setChildNodesCheck(const QModelIndex& index, const QVariant& val
         eventLoop.exec();
     }
     int childrenCount = rowCount(index);
-    qDebug() << "Children count:" << childrenCount;
+    //qDebug() << "Children count:" << childrenCount;
 
-    // emit setProgressBarValue(0);
-    // emit setProgressBarRange(0, childrenCount);
+    totalCount += childrenCount;
+
+    emit setProgressBarRange(0, totalCount);
 
     if (childrenCount > 0) {
         // Need to wait because signal directoryLoaded does not guarantee
@@ -79,7 +114,8 @@ bool TreeModel::setChildNodesCheck(const QModelIndex& index, const QVariant& val
 
     for(int i = 0; i < childrenCount; i++) {
         setNodeCheckState(QFileSystemModel::index(i, 0, index), value, Qt::CheckStateRole);
-        // emit setProgressBarValue(i + 1);
+        currentStep++;
+        emit setProgressBarValue(currentStep);
     }
     return true;
 }

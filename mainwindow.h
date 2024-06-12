@@ -33,9 +33,15 @@ private slots:
 
     void on_deselectAllButton_clicked();
 
+    void on_treeView_activated(const QModelIndex &index);
+
+    void on_treeView_clicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
 
     TreeModel *model = nullptr;
+
+    QString readFileWithParameters(QString filePath);
 };
 #endif // MAINWINDOW_H

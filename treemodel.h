@@ -16,6 +16,9 @@ class TreeModel : public QFileSystemModel {
 public:
     explicit TreeModel(QObject *parent = Q_NULLPTR);
 
+    void selectAll(const QModelIndex &rootIndex);
+    void deselectAll(const QModelIndex &rootIndex);
+
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
 
@@ -28,6 +31,9 @@ signals:
     void setProgressBarValue(int);
 
 private:
+    int totalCount;
+    int currentStep;
+
     bool setNodeCheckState(const QModelIndex & index, const QVariant & value, int role);
     bool setChildNodesCheck (const QModelIndex & index, const QVariant & value);
 
